@@ -1,0 +1,17 @@
+# User specific secrets
+appsettings.Development.json
+**/appsettings.Development.json
+
+# Build results
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+
+# Test results
+TestResults/
+
+# Docker
+*.log
