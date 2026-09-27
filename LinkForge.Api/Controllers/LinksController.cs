@@ -1,9 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using LinkForge.Api.Models;
+﻿using LinkForge.Api.Models;
 using LinkForge.Shared.Data;
 using LinkForge.Shared.Models;
 using LinkForge.Shared.Services;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace LinkForge.Api.Controllers;
 
@@ -62,4 +63,5 @@ public class LinksController : ControllerBase
         if (link == null || link.IsDeleted) return NotFound();
         return link;
     }
+
 }
