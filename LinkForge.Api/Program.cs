@@ -9,7 +9,6 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Redis singleton
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
@@ -20,6 +19,17 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 
 builder.Services.AddSingleton<RedisService>();
 builder.Services.AddSingleton<ClickEventPublisher>();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200",
+                "https://linkforge-web.vercel.app")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -32,9 +42,28 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowAngular");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+
+// Root Endpoint for the API
+app.MapGet("/", () => Results.Json(new
+{
+    name = "LinkForge API",
+    description = "Distributed URL shortener with event-driven analytics",
+    endpoints = new[]
+    {
+        "GET    /api/links",
+        "POST   /api/links",
+        "GET    /api/links/{id}",
+        "PUT    /api/links/{id}",
+        "DELETE /api/links/{id}",
+        "GET    /api/links/{id}/analytics",
+        "GET    /{code}          (redirect)"
+    },
+    source = "https://github.com/esdrasj71/LinkForge"
+}));
 
 app.Run();
 

@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY ["LinkForge.Worker/LinkForge.Worker.csproj", "LinkForge.Worker/"]
+COPY ["LinkForge.Shared/LinkForge.Shared.csproj", "LinkForge.Shared/"]
+RUN dotnet restore "LinkForge.Worker/LinkForge.Worker.csproj"
+
+COPY . .
+WORKDIR "/src/LinkForge.Worker"
+RUN dotnet publish "LinkForge.Worker.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/runtime:8.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+
+ENV DOTNET_ENVIRONMENT=Production
+
+ENTRYPOINT ["dotnet", "LinkForge.Worker.dll"]
