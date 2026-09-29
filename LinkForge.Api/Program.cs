@@ -24,7 +24,8 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
     {
-        policy.WithOrigins("http://localhost:4200",
+        policy.WithOrigins(
+                "http://localhost:4200",
                 "https://linkforge-web.vercel.app")
               .AllowAnyHeader()
               .AllowAnyMethod();
@@ -36,18 +37,25 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+if (!app.Environment.IsEnvironment("Testing"))
+{
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+    app.UseHttpsRedirection();
 }
 
 app.UseCors("AllowAngular");
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-// Root Endpoint for the API
+// Root endpoint for the API
 app.MapGet("/", () => Results.Json(new
 {
     name = "LinkForge API",
